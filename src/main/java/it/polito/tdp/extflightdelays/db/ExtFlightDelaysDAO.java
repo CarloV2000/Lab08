@@ -7,9 +7,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import it.polito.tdp.extflightdelays.model.Airline;
 import it.polito.tdp.extflightdelays.model.Airport;
+import it.polito.tdp.extflightdelays.model.CoppiaA;
 import it.polito.tdp.extflightdelays.model.Flight;
 
 public class ExtFlightDelaysDAO {
@@ -91,4 +93,35 @@ public class ExtFlightDelaysDAO {
 			throw new RuntimeException("Error Connection Database");
 		}
 	}
+	
+	/**
+	 * metodo per trovare tutte le coppie aeroportoPartenza e aeroportoArrivo
+	 * @param aeroportiIdMap è la idMap che associa ogni aeroporto al suo id
+	 * @return lista di tutte le coppie
+	 */
+	public List<CoppiaA> getAllCoppie (Map<Integer, Airport>aeroportiIdMap) {
+		String sql = "SELECT distinct ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID, DISTANCE "
+				+ "FROM flights ";
+		List<CoppiaA>allCoppie = new ArrayList<>();
+
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet rs = st.executeQuery();
+			
+			while (rs.next()) {
+				CoppiaA coppia = new CoppiaA(aeroportiIdMap.get(rs.getInt("ORIGIN_AIRPORT_ID")), aeroportiIdMap.get(rs.getInt("DESTINATION_AIRPORT_ID")), rs.getInt("DISTANCE"));
+				allCoppie.add(coppia);
+			
+			}
+			conn.close();
+			return allCoppie;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+	}	
+	
 }
